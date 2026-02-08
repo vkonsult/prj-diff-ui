@@ -1,6 +1,5 @@
-import SubjectDiffMockApp from "./SubjectDiffMockApp";
+import SubjectDiffApp from "./SubjectDiffApp";
 
 export default function App() {
-  return <SubjectDiffMockApp />;
+  return <SubjectDiffApp />;
 }
-
