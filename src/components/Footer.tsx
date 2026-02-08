@@ -1,7 +1,7 @@
 export function Footer() {
   return (
     <div className="border-t border-slate-200 bg-white">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-5 px-4 py-3 text-xs text-slate-600">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-3 py-2 text-xs text-slate-600">
         <div className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-emerald-500" />
           <span>New Rows/Columns Added</span>

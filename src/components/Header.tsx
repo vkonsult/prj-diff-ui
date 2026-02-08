@@ -23,7 +23,7 @@ export function Header({ tab, onTabChange, showAll, onShowAllChange, onlyNarrati
   return (
     <div className="sticky top-0 z-40 bg-white">
       <div className="border-b border-slate-200">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-3 py-2">
           <div className="flex items-center gap-2">
             <div className="h-7 w-7 rounded-full" style={{ backgroundColor: ORANGE }} />
             <div className="leading-tight">
@@ -35,20 +35,20 @@ export function Header({ tab, onTabChange, showAll, onShowAllChange, onlyNarrati
         </div>
       </div>
       <div className="border-b border-slate-200">
-        <div className="mx-auto max-w-7xl px-4 py-3">
+        <div className="mx-auto max-w-7xl px-3 py-2">
           <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
             <span>Projects</span><span>›</span><span className="text-slate-700">PRJ011</span><span>›</span>
             <button type="button" className="font-semibold hover:underline" style={{ color: NAVY }}>Compare with other project</button>
           </div>
           <div className="mt-2 text-lg font-semibold text-slate-900">PRJ011 vs PRJ012</div>
           <div className="mt-0.5 text-sm text-slate-600">Patient list + clinical domains difference explorer.</div>
-          <div className="mt-3 flex flex-wrap items-end gap-4 border-b border-slate-200">
+          <div className="mt-2 flex flex-wrap items-end gap-3 border-b border-slate-200">
             {(["Summary", "Diff", "PatientList", "Narrative"] as const).map((k) => (
               <button
                 key={k}
                 type="button"
                 onClick={() => onTabChange(k)}
-                className={`relative -mb-px pb-3 text-sm font-semibold transition ${tab === k ? "text-slate-900" : "text-slate-500 hover:text-slate-900"}`}
+                className={`relative -mb-px pb-2 text-sm font-semibold transition ${tab === k ? "text-slate-900" : "text-slate-500 hover:text-slate-900"}`}
               >
                 {TAB_LABELS[k]}
                 {tab === k && <span className="absolute inset-x-0 -bottom-px h-0.5" style={{ backgroundColor: NAVY }} />}

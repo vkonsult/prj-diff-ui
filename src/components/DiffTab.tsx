@@ -53,25 +53,25 @@ export function DiffTab({
     onSelectedColsChange(selectedCols.includes(col) ? selectedCols.filter((x) => x !== col) : [...selectedCols, col]);
 
   return (
-    <div className="mt-4 grid gap-3 lg:grid-cols-12">
-      <div className="lg:col-span-12 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+    <div className="mt-2 grid gap-2 lg:grid-cols-12">
+      <div className="lg:col-span-12 rounded-md bg-white p-3 shadow-sm ring-1 ring-slate-200">
         <SectionTitle
           icon={Filter}
           title="Filters"
           right={
             <div className="flex flex-wrap items-center gap-2">
-              <button type="button" onClick={() => onColsOpenChange(true)} className="inline-flex items-center gap-2 rounded-2xl bg-white px-3 py-2 text-sm font-semibold text-slate-900 ring-1 ring-slate-200 hover:bg-slate-50">
+              <button type="button" onClick={() => onColsOpenChange(true)} className="inline-flex items-center gap-2 rounded bg-white px-2 py-1.5 text-sm font-semibold text-slate-900 ring-1 ring-slate-200 hover:bg-slate-50">
                 <Columns className="h-4 w-4" /> Select columns
               </button>
-              <button type="button" className="inline-flex items-center gap-2 rounded-2xl bg-white px-3 py-2 text-sm font-semibold text-slate-900 ring-1 ring-slate-200 hover:bg-slate-50">
+              <button type="button" className="inline-flex items-center gap-2 rounded bg-white px-2 py-1.5 text-sm font-semibold text-slate-900 ring-1 ring-slate-200 hover:bg-slate-50">
                 <Download className="h-4 w-4" /> Export filtered
               </button>
             </div>
           }
         />
-        <div className="mt-3 grid gap-2 md:grid-cols-12">
+        <div className="mt-2 grid gap-2 md:grid-cols-12">
           <div className="md:col-span-6">
-            <div className="flex items-center gap-2 rounded-2xl bg-slate-50 px-3 py-2 ring-1 ring-slate-200">
+            <div className="flex items-center gap-2 rounded bg-slate-50 px-2 py-1.5 ring-1 ring-slate-200">
               <Search className="h-4 w-4 text-slate-500" />
               <input
                 value={search}
@@ -85,14 +85,14 @@ export function DiffTab({
             <select
               value={changeType}
               onChange={(e) => onChangeTypeChange(e.target.value as "All" | ChangeType)}
-              className="w-full rounded-2xl bg-white px-3 py-2 text-sm font-semibold text-slate-900 ring-1 ring-slate-200"
+              className="w-full rounded bg-white px-2 py-1.5 text-sm font-semibold text-slate-900 ring-1 ring-slate-200"
             >
               {(["All", "Added", "Removed", "Modified", "Unchanged"] as const).map((x) => (
                 <option key={x} value={x}>{x}</option>
               ))}
             </select>
           </div>
-          <div className="md:col-span-3 flex items-center gap-2 rounded-2xl bg-slate-50 px-3 py-2 ring-1 ring-slate-200">
+          <div className="md:col-span-3 flex items-center gap-2 rounded bg-slate-50 px-2 py-1.5 ring-1 ring-slate-200">
             <input type="checkbox" checked={onlyChanged} onChange={(e) => onOnlyChangedChange(e.target.checked)} className="h-4 w-4" />
             <span className="text-sm text-slate-700">Only changed</span>
           </div>
@@ -100,10 +100,10 @@ export function DiffTab({
         <div className="mt-2 text-xs text-slate-500">Selected columns: {selectedCols.length ? selectedCols.join(", ") : "(none)"}</div>
       </div>
 
-      <div className="lg:col-span-5 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+      <div className="lg:col-span-5 rounded-md bg-white p-3 shadow-sm ring-1 ring-slate-200">
         <SectionTitle icon={ListChecks} title="Subjects" />
-        <div className="mt-3 overflow-hidden rounded-2xl ring-1 ring-slate-200">
-          <div className="grid grid-cols-12 bg-violet-100 px-4 py-3 text-xs font-semibold text-violet-800">
+        <div className="mt-2 overflow-hidden rounded ring-1 ring-slate-200">
+          <div className="grid grid-cols-12 bg-orange-100 px-3 py-2 text-xs font-semibold text-orange-800">
             <div className="col-span-5">USUBJID</div>
             <div className="col-span-3">Type</div>
             <div className="col-span-2 text-right"># Fields</div>
@@ -117,7 +117,7 @@ export function DiffTab({
                 tabIndex={0}
                 onClick={() => onSelectedIdChange(r.id)}
                 onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelectedIdChange(r.id); }}
-                className={`grid grid-cols-12 items-center px-4 py-3 text-left hover:bg-violet-50 cursor-pointer ${selectedId === r.id ? "bg-violet-100 ring-1 ring-violet-200" : ""}`}
+                className={`grid grid-cols-12 items-center px-3 py-2 text-left hover:bg-orange-50 cursor-pointer ${selectedId === r.id ? "bg-orange-100 ring-1 ring-orange-200" : ""}`}
               >
                 <div className="col-span-5">
                   <div className="text-sm font-semibold text-slate-900">{r.id}</div>
@@ -137,7 +137,7 @@ export function DiffTab({
         </div>
       </div>
 
-      <div className="lg:col-span-7 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+      <div className="lg:col-span-7 rounded-md bg-white p-3 shadow-sm ring-1 ring-slate-200">
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="flex items-center gap-2">
@@ -149,20 +149,20 @@ export function DiffTab({
           <button
             type="button"
             onClick={() => onOnlyChangedColsChange(!onlyChangedCols)}
-            className="inline-flex items-center gap-2 rounded-2xl bg-white px-3 py-2 text-sm font-semibold text-slate-900 ring-1 ring-slate-200 hover:bg-slate-50"
+            className="inline-flex items-center gap-2 rounded bg-white px-2 py-1.5 text-sm font-semibold text-slate-900 ring-1 ring-slate-200 hover:bg-slate-50"
           >
             <FileDiff className="h-4 w-4" /> {onlyChangedCols ? "Only changed cols" : "All selected cols"}
           </button>
         </div>
-        <div className="mt-3">
+        <div className="mt-2">
           {selected.changeType === "Unchanged" && (
-            <div className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-700 ring-1 ring-slate-200">No differences detected for this subject.</div>
+            <div className="rounded bg-slate-50 p-3 text-sm text-slate-700 ring-1 ring-slate-200">No differences detected for this subject.</div>
           )}
           {selected.changeType === "Added" && (
-            <div className="rounded-2xl bg-emerald-50 p-5 text-sm text-emerald-800 ring-1 ring-emerald-200">Subject exists in PRJ012 but not in PRJ011.</div>
+            <div className="rounded bg-emerald-50 p-3 text-sm text-emerald-800 ring-1 ring-emerald-200">Subject exists in PRJ012 but not in PRJ011.</div>
           )}
           {selected.changeType === "Removed" && (
-            <div className="rounded-2xl bg-rose-50 p-5 text-sm text-rose-800 ring-1 ring-rose-200">Subject exists in PRJ011 but not in PRJ012.</div>
+            <div className="rounded bg-rose-50 p-3 text-sm text-rose-800 ring-1 ring-rose-200">Subject exists in PRJ011 but not in PRJ012.</div>
           )}
           <div className="mt-3 space-y-2">
             <div className="grid grid-cols-12 px-3 text-xs font-semibold text-slate-600">
@@ -171,11 +171,11 @@ export function DiffTab({
               <div className="col-span-4">PRJ012</div>
             </div>
             {diff.length ? diff.map((r) => <DiffRow key={r.col} col={r.col} q1={r.q1} q2={r.q2} />) : (
-              <div className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-700 ring-1 ring-slate-200">No diffs to show for selected columns.</div>
+              <div className="rounded bg-slate-50 p-3 text-sm text-slate-700 ring-1 ring-slate-200">No diffs to show for selected columns.</div>
             )}
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              <button type="button" className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Copy diff</button>
-              <button type="button" className="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 ring-1 ring-slate-200 hover:bg-slate-50">Export subject diff</button>
+              <button type="button" className="inline-flex items-center gap-2 rounded bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white">Copy diff</button>
+              <button type="button" className="inline-flex items-center gap-2 rounded bg-white px-3 py-1.5 text-sm font-semibold text-slate-900 ring-1 ring-slate-200 hover:bg-slate-50">Export subject diff</button>
             </div>
           </div>
         </div>

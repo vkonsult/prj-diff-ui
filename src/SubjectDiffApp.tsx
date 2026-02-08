@@ -36,7 +36,7 @@ export default function SubjectDiffApp() {
         onlyNarrative={onlyNarrative}
         onOnlyNarrativeChange={setOnlyNarrative}
       />
-      <div className="mx-auto max-w-7xl px-4 py-4">
+      <div className="mx-auto max-w-7xl px-3 py-2">
         {tab === "Summary" && (
           <SummaryTab
             onOpenDiff={() => setTab("Diff")}
