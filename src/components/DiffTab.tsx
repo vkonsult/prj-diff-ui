@@ -1,7 +1,7 @@
-import { Columns, Download, FileDiff, Filter, ListChecks, Search } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight, Columns, FileDiff, ListChecks } from "lucide-react";
 import { NarrativeIcon } from "./NarrativeIcon";
-import { SUBJECTS } from "../constants";
-import type { ChangeType } from "../types";
+import { SUBJECTS, getColumnLabel } from "../constants";
 import { filterRows, computeDiff } from "../utils";
 import { Pill } from "./Pill";
 import { SectionTitle } from "./SectionTitle";
@@ -9,12 +9,6 @@ import { DiffRow } from "./DiffRow";
 import { ColumnPicker } from "./ColumnPicker";
 
 type Props = {
-  search: string;
-  onSearchChange: (v: string) => void;
-  changeType: "All" | ChangeType;
-  onChangeTypeChange: (v: "All" | ChangeType) => void;
-  onlyChanged: boolean;
-  onOnlyChangedChange: (v: boolean) => void;
   selectedId: string;
   onSelectedIdChange: (id: string) => void;
   selectedCols: string[];
@@ -29,9 +23,6 @@ type Props = {
 };
 
 export function DiffTab({
-  search, onSearchChange,
-  changeType, onChangeTypeChange,
-  onlyChanged, onOnlyChangedChange,
   selectedId, onSelectedIdChange,
   selectedCols, onSelectedColsChange,
   onlyChangedCols, onOnlyChangedColsChange,
@@ -39,67 +30,30 @@ export function DiffTab({
   showAll, onlyNarrative,
   onOpenNarrative,
 }: Props) {
+  const DIFF_PAGE_SIZE = 10;
+
   const filtered = filterRows(SUBJECTS, {
-    search,
-    changeType,
-    onlyChanged: showAll ? false : onlyChanged,
+    search: "",
+    changeType: "All",
+    onlyChanged: false,
     minChanges: 1,
     onlyNarrative,
   });
   const selected = SUBJECTS.find((s) => s.id === selectedId) ?? SUBJECTS[0]!;
   const diff = computeDiff(selected.diff ?? [], selectedCols, onlyChangedCols);
 
-  const toggleCol = (col: string) =>
-    onSelectedColsChange(selectedCols.includes(col) ? selectedCols.filter((x) => x !== col) : [...selectedCols, col]);
+  const [diffPage, setDiffPage] = useState(0);
+  const totalPages = Math.max(1, Math.ceil(diff.length / DIFF_PAGE_SIZE));
+  const start = diffPage * DIFF_PAGE_SIZE;
+  const end = Math.min(start + DIFF_PAGE_SIZE, diff.length);
+  const diffSlice = diff.slice(start, end);
+
+  useEffect(() => {
+    setDiffPage(0);
+  }, [selectedId]);
 
   return (
     <div className="mt-2 grid gap-2 lg:grid-cols-12">
-      <div className="lg:col-span-12 rounded-md bg-white p-3 shadow-sm ring-1 ring-slate-200">
-        <SectionTitle
-          icon={Filter}
-          title="Filters"
-          right={
-            <div className="flex flex-wrap items-center gap-2">
-              <button type="button" onClick={() => onColsOpenChange(true)} className="inline-flex items-center gap-2 rounded bg-white px-2 py-1.5 text-sm font-semibold text-slate-900 ring-1 ring-slate-200 hover:bg-slate-50">
-                <Columns className="h-4 w-4" /> Select columns
-              </button>
-              <button type="button" className="inline-flex items-center gap-2 rounded bg-white px-2 py-1.5 text-sm font-semibold text-slate-900 ring-1 ring-slate-200 hover:bg-slate-50">
-                <Download className="h-4 w-4" /> Export filtered
-              </button>
-            </div>
-          }
-        />
-        <div className="mt-2 grid gap-2 md:grid-cols-12">
-          <div className="md:col-span-6">
-            <div className="flex items-center gap-2 rounded bg-slate-50 px-2 py-1.5 ring-1 ring-slate-200">
-              <Search className="h-4 w-4 text-slate-500" />
-              <input
-                value={search}
-                onChange={(e) => onSearchChange(e.target.value)}
-                placeholder="Search USUBJID or notes…"
-                className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
-              />
-            </div>
-          </div>
-          <div className="md:col-span-3">
-            <select
-              value={changeType}
-              onChange={(e) => onChangeTypeChange(e.target.value as "All" | ChangeType)}
-              className="w-full rounded bg-white px-2 py-1.5 text-sm font-semibold text-slate-900 ring-1 ring-slate-200"
-            >
-              {(["All", "Added", "Removed", "Modified", "Unchanged"] as const).map((x) => (
-                <option key={x} value={x}>{x}</option>
-              ))}
-            </select>
-          </div>
-          <div className="md:col-span-3 flex items-center gap-2 rounded bg-slate-50 px-2 py-1.5 ring-1 ring-slate-200">
-            <input type="checkbox" checked={onlyChanged} onChange={(e) => onOnlyChangedChange(e.target.checked)} className="h-4 w-4" />
-            <span className="text-sm text-slate-700">Only changed</span>
-          </div>
-        </div>
-        <div className="mt-2 text-xs text-slate-500">Selected columns: {selectedCols.length ? selectedCols.join(", ") : "(none)"}</div>
-      </div>
-
       <div className="lg:col-span-5 rounded-md bg-white p-3 shadow-sm ring-1 ring-slate-200">
         <SectionTitle icon={ListChecks} title="Subjects" />
         <div className="mt-2 overflow-hidden rounded ring-1 ring-slate-200">
@@ -146,14 +100,24 @@ export function DiffTab({
             </div>
             <div className="mt-1 text-sm text-slate-600">Last seen: {selected.lastSeen} • {selected.notes}</div>
           </div>
-          <button
-            type="button"
-            onClick={() => onOnlyChangedColsChange(!onlyChangedCols)}
-            className="inline-flex items-center gap-2 rounded bg-white px-2 py-1.5 text-sm font-semibold text-slate-900 ring-1 ring-slate-200 hover:bg-slate-50"
-          >
-            <FileDiff className="h-4 w-4" /> {onlyChangedCols ? "Only changed cols" : "All selected cols"}
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onColsOpenChange(true)}
+              className="inline-flex items-center gap-2 rounded bg-white px-2 py-1.5 text-sm font-semibold text-slate-900 ring-1 ring-slate-200 hover:bg-slate-50"
+            >
+              <Columns className="h-4 w-4" /> Select columns
+            </button>
+            <button
+              type="button"
+              onClick={() => onOnlyChangedColsChange(!onlyChangedCols)}
+              className="inline-flex items-center gap-2 rounded bg-white px-2 py-1.5 text-sm font-semibold text-slate-900 ring-1 ring-slate-200 hover:bg-slate-50"
+            >
+              <FileDiff className="h-4 w-4" /> {onlyChangedCols ? "Only changed cols" : "All selected cols"}
+            </button>
+          </div>
         </div>
+        <div className="mt-1 text-xs text-slate-500">Selected columns: {selectedCols.length ? selectedCols.map(getColumnLabel).join(", ") : "(none)"}</div>
         <div className="mt-2">
           {selected.changeType === "Unchanged" && (
             <div className="rounded bg-slate-50 p-3 text-sm text-slate-700 ring-1 ring-slate-200">No differences detected for this subject.</div>
@@ -165,18 +129,41 @@ export function DiffTab({
             <div className="rounded bg-rose-50 p-3 text-sm text-rose-800 ring-1 ring-rose-200">Subject exists in PRJ011 but not in PRJ012.</div>
           )}
           <div className="mt-3 space-y-2">
+            {diff.length > 0 && (
+              <div className="flex items-center justify-between gap-2 rounded bg-slate-50 px-2 py-1.5 ring-1 ring-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setDiffPage((p) => Math.max(0, p - 1))}
+                  disabled={diffPage === 0}
+                  className="flex items-center gap-1 rounded px-2 py-1 text-sm font-semibold text-slate-700 hover:bg-slate-200 disabled:opacity-40 disabled:pointer-events-none"
+                  aria-label="Previous rows"
+                >
+                  <ChevronLeft className="h-4 w-4" /> Previous
+                </button>
+                <span className="text-sm font-semibold text-slate-700">
+                  {diff.length <= DIFF_PAGE_SIZE
+                    ? `${diff.length} row${diff.length !== 1 ? "s" : ""} changed`
+                    : `${start + 1}–${end} of ${diff.length} rows changed`}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setDiffPage((p) => Math.min(totalPages - 1, p + 1))}
+                  disabled={diffPage >= totalPages - 1}
+                  className="flex items-center gap-1 rounded px-2 py-1 text-sm font-semibold text-slate-700 hover:bg-slate-200 disabled:opacity-40 disabled:pointer-events-none"
+                  aria-label="Next rows"
+                >
+                  Next <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            )}
             <div className="grid grid-cols-12 px-3 text-xs font-semibold text-slate-600">
               <div className="col-span-4">Column</div>
               <div className="col-span-4">PRJ011</div>
               <div className="col-span-4">PRJ012</div>
             </div>
-            {diff.length ? diff.map((r) => <DiffRow key={r.col} col={r.col} q1={r.q1} q2={r.q2} />) : (
+            {diff.length ? diffSlice.map((r, i) => <DiffRow key={`${start + i}-${r.col}`} col={r.col} q1={r.q1} q2={r.q2} />) : (
               <div className="rounded bg-slate-50 p-3 text-sm text-slate-700 ring-1 ring-slate-200">No diffs to show for selected columns.</div>
             )}
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <button type="button" className="inline-flex items-center gap-2 rounded bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white">Copy diff</button>
-              <button type="button" className="inline-flex items-center gap-2 rounded bg-white px-3 py-1.5 text-sm font-semibold text-slate-900 ring-1 ring-slate-200 hover:bg-slate-50">Export subject diff</button>
-            </div>
           </div>
         </div>
       </div>
@@ -185,7 +172,7 @@ export function DiffTab({
         open={colsOpen}
         onClose={() => onColsOpenChange(false)}
         selectedCols={selectedCols}
-        onToggleCol={toggleCol}
+        onApply={onSelectedColsChange}
         onReset={() => onSelectedColsChange(["ARM", "TRT01A", "AESEV", "AESER", "AEREL"])}
       />
     </div>

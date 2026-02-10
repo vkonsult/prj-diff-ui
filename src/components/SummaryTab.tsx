@@ -1,5 +1,5 @@
 import { ArrowRight, ChevronDown, ChevronUp, Columns, FileDiff, ListChecks } from "lucide-react";
-import { SUMMARY, SUBJECTS } from "../constants";
+import { SUMMARY, SUBJECTS, getColumnLabel } from "../constants";
 import { useState } from "react";
 import { NAVY } from "../constants";
 import { NarrativeIcon } from "./NarrativeIcon";
@@ -57,7 +57,7 @@ export function SummaryTab({ onOpenDiff, onSelectSubject, onSetTab, onSetSelecte
               </div>
 <div className="rounded bg-slate-50 p-2 ring-1 ring-slate-200">
                       <div className="text-xs font-semibold text-slate-600">Top column</div>
-                <div className="mt-1 text-sm font-semibold text-slate-900">{SUMMARY.topChangedCols[0].col}</div>
+                <div className="mt-1 text-sm font-semibold text-slate-900">{getColumnLabel(SUMMARY.topChangedCols[0].col)}</div>
                 <div className="text-xs text-slate-500">{SUMMARY.topChangedCols[0].changed} changes</div>
               </div>
             </div>
@@ -89,7 +89,7 @@ export function SummaryTab({ onOpenDiff, onSelectSubject, onSetTab, onSetSelecte
                         className="w-full rounded p-2 text-left hover:bg-slate-50"
                       >
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-slate-700">{x.col}</span>
+                          <span className="text-slate-700">{getColumnLabel(x.col)}</span>
                           <span className="text-slate-500">{x.changed}</span>
                         </div>
                         <div className="mt-1 h-1.5 rounded bg-slate-100 ring-1 ring-slate-200">

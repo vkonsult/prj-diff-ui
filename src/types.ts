@@ -20,3 +20,25 @@ export type FilterParams = {
   minChanges: number;
   onlyNarrative: boolean;
 };
+
+/** Patient list query block (editable or read-only) */
+export type PatientListQuery = {
+  id: string;
+  title: string;
+  dataset: "SDTM" | "ADaM";
+  freeText: string;
+  logic: string;
+};
+
+/** Row in the List of Patients table */
+export type PatientListRow = {
+  subjid: string;
+  status: "green" | "yellow" | "red";
+  age: number;
+  sex: string;
+  race: string;
+  death: boolean;
+  sae: boolean;
+  aeToDc: boolean;
+  narrative?: boolean;
+};

@@ -43,7 +43,7 @@ export function Header({ tab, onTabChange, showAll, onShowAllChange, onlyNarrati
           <div className="mt-2 text-lg font-semibold text-slate-900">PRJ011 vs PRJ012</div>
           <div className="mt-0.5 text-sm text-slate-600">Patient list + clinical domains difference explorer.</div>
           <div className="mt-2 flex flex-wrap items-end gap-3 border-b border-slate-200">
-            {(["Summary", "Diff", "PatientList", "Narrative"] as const).map((k) => (
+            {(["Summary", "PatientList", "Diff", "Narrative"] as const).map((k) => (
               <button
                 key={k}
                 type="button"
