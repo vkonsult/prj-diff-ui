@@ -98,7 +98,6 @@ function NarrativePanel({
 
   return (
     <div className="flex flex-col rounded-md bg-white shadow-sm ring-1 ring-slate-200">
-      {/* Header: project label + pill, USUBJID dropdown */}
       <div className="flex items-center justify-between border-b border-slate-200 px-3 py-2">
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-slate-900">
@@ -132,7 +131,6 @@ function NarrativePanel({
       </div>
 
       <div ref={scrollContainerRef} className="flex-1 overflow-auto p-3">
-        {/* Sample Narrative title + TRACK CHANGES/PROMPTS (left only) */}
         <div className="flex items-center justify-between gap-2">
           <h2
             className="text-base font-bold"
@@ -162,7 +160,6 @@ function NarrativePanel({
           </div>
         </div>
 
-        {/* Difference filter for key/value rows (new side in track view) */}
         {isNew && enableChangeNavigation && (
           <div className="mt-2">
             <ChangeTypeFilter
@@ -173,14 +170,12 @@ function NarrativePanel({
           </div>
         )}
 
-        {/* Key-value data block with Difference column */}
         <div className="mt-3 divide-y divide-slate-200 rounded border border-slate-200">
           {NARRATIVE_KEY_VALUES.filter(
             (row) =>
               row.changeType !== "Unchanged" &&
               (keyRowFilter === "All" || row.changeType === keyRowFilter)
           ).map((row, i) => (
-            // Key/value + difference row
             <div
               key={i}
               className={`grid grid-cols-1 gap-1 px-2 py-1.5 sm:grid-cols-[minmax(0,1.5fr)_minmax(0,2.5fr)_minmax(0,1fr)] ${
@@ -241,7 +236,6 @@ function NarrativePanel({
           ))}
         </div>
 
-        {/* Event summary table */}
         <div className="mt-3 overflow-x-auto rounded border border-slate-200">
           <table className="w-full min-w-[640px] border-collapse text-sm">
             <thead>
@@ -276,7 +270,6 @@ function NarrativePanel({
           ))}
         </div>
 
-        {/* Free-text narrative: left = Data Modified (rose), right = New Data Found (emerald) */}
         <div className="mt-3 space-y-2">
           {(() => {
             let changeIndex = 0;
@@ -344,7 +337,6 @@ export function NarrativeTab({
 
   return (
     <div className="mt-2 space-y-3">
-      {/* View toggle */}
       <div className="flex flex-wrap items-center gap-2 text-xs">
         <span className="font-semibold text-slate-600">View:</span>
         <button
@@ -390,7 +382,6 @@ export function NarrativeTab({
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
-          {/* Single narrative view (PRJ012) */}
           <NarrativePanel
             side="new"
             selectedSubjectId={effectiveId}
@@ -402,7 +393,6 @@ export function NarrativeTab({
             showReviewToggles={true}
           />
 
-          {/* Track changes panel (static sample, based on reference UI) */}
           <div className="flex flex-col rounded-md bg-white shadow-sm ring-1 ring-slate-200">
             <div className="flex items-center justify-between border-b border-slate-200 px-3 py-2">
               <h3 className="text-sm font-semibold text-slate-900">
