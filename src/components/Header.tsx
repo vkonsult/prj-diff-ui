@@ -1,25 +1,21 @@
 import { NAVY, ORANGE } from "../constants";
-import { Switch } from "./Switch";
 
-export type Tab = "Summary" | "Diff" | "PatientList" | "Narrative";
+export type Tab = "Summary" | "Diff" | "PatientList" | "NarrativesList" | "Narrative";
 
 const TAB_LABELS: Record<Tab, string> = {
-  Summary: "Overall Summary",
-  Diff: "Patient Profile Changes",
-  PatientList: "Patient List Changes",
+  Summary: "Source Data Files",
+  Diff: "Patient Profile",
+  PatientList: "Patient List",
+  NarrativesList: "Narratives list changes",
   Narrative: "Narrative Difference",
 };
 
 type Props = {
   tab: Tab;
   onTabChange: (tab: Tab) => void;
-  showAll: boolean;
-  onShowAllChange: (v: boolean) => void;
-  onlyNarrative: boolean;
-  onOnlyNarrativeChange: (v: boolean) => void;
 };
 
-export function Header({ tab, onTabChange, showAll, onShowAllChange, onlyNarrative, onOnlyNarrativeChange }: Props) {
+export function Header({ tab, onTabChange }: Props) {
   return (
     <div className="sticky top-0 z-40 bg-white">
       <div className="border-b border-slate-200">
@@ -40,27 +36,23 @@ export function Header({ tab, onTabChange, showAll, onShowAllChange, onlyNarrati
             <span>Projects</span><span>›</span><span className="text-slate-700">PRJ011</span><span>›</span>
             <button type="button" className="font-semibold hover:underline" style={{ color: NAVY }}>Compare with other project</button>
           </div>
-          <div className="mt-2 text-lg font-semibold text-slate-900">PRJ011 vs PRJ012</div>
-          <div className="mt-0.5 text-sm text-slate-600">Patient list + clinical domains difference explorer.</div>
-          <div className="mt-2 flex flex-wrap items-end gap-3 border-b border-slate-200">
-            {(["Summary", "PatientList", "Diff", "Narrative"] as const).map((k) => (
+          <div className="mt-2 flex flex-wrap gap-2 pb-2">
+            {(["Summary", "PatientList", "Diff", "NarrativesList", "Narrative"] as const).map((k) => (
               <button
                 key={k}
                 type="button"
                 onClick={() => onTabChange(k)}
-                className={`relative -mb-px pb-2 text-sm font-semibold transition ${tab === k ? "text-slate-900" : "text-slate-500 hover:text-slate-900"}`}
+                className={`rounded-md border px-3 py-2 text-sm font-semibold transition ${
+                  tab === k
+                    ? "border-transparent text-white"
+                    : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-400"
+                }`}
+                style={tab === k ? { backgroundColor: NAVY } : undefined}
               >
                 {TAB_LABELS[k]}
-                {tab === k && <span className="absolute inset-x-0 -bottom-px h-0.5" style={{ backgroundColor: NAVY }} />}
               </button>
             ))}
           </div>
-          {tab === "Diff" && (
-            <div className="mt-2 flex flex-wrap items-center gap-3 pb-1">
-              <Switch checked={showAll} label="Show All" accent={ORANGE} onToggle={onShowAllChange} />
-              <Switch checked={onlyNarrative} label="Show Only Narrative Subjects" onToggle={onOnlyNarrativeChange} />
-            </div>
-          )}
         </div>
       </div>
     </div>

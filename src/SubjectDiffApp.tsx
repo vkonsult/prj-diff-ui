@@ -1,20 +1,30 @@
 import { useState } from "react";
-import type { Tab } from "./components/Header";
-import { Header } from "./components/Header";
-import { SummaryTab } from "./components/SummaryTab";
-import { DiffTab } from "./components/DiffTab";
-import { NarrativeTab } from "./components/NarrativeTab";
-import { PatientListTab } from "./components/PatientListTab";
+import { Box, Container } from "@mui/material";
+import type { Tab } from "./tabs";
+import { AppHeader } from "./components/AppHeader";
+import {
+  SourceDataFilesTab,
+  PatientProfileTab,
+  PatientListTab,
+  NarrativesListChangesTab,
+  NarrativeDifferenceTab,
+} from "./tabs";
 import { Footer } from "./components/Footer";
 import { SUBJECTS } from "./constants";
 
 export default function SubjectDiffApp() {
   const [tab, setTab] = useState<Tab>("Summary");
-  const [showAll, setShowAll] = useState(true);
-  const [onlyNarrative, setOnlyNarrative] = useState(false);
   const [selectedId, setSelectedId] = useState(SUBJECTS[1]?.id ?? SUBJECTS[0]?.id ?? "");
   const [onlyChangedCols, setOnlyChangedCols] = useState(true);
-  const [selectedCols, setSelectedCols] = useState<string[]>(["ARM", "TRT01A", "AESEV", "AESER", "AEREL"]);
+  const [selectedCols, setSelectedCols] = useState<string[]>([
+    "AETERM",
+    "AEDECOD",
+    "AESEV",
+    "AESER",
+    "AEREL",
+    "AESTDTC",
+    "AEENDTC",
+  ]);
   const [colsOpen, setColsOpen] = useState(false);
 
   const openNarrative = (subjectId: string) => {
@@ -23,18 +33,11 @@ export default function SubjectDiffApp() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Header
-        tab={tab}
-        onTabChange={setTab}
-        showAll={showAll}
-        onShowAllChange={setShowAll}
-        onlyNarrative={onlyNarrative}
-        onOnlyNarrativeChange={setOnlyNarrative}
-      />
-      <div className="mx-auto max-w-7xl px-3 py-2">
+    <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
+      <AppHeader tab={tab} onTabChange={setTab} />
+      <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2 }, py: 1 }}>
         {tab === "Summary" && (
-          <SummaryTab
+          <SourceDataFilesTab
             onOpenDiff={() => setTab("Diff")}
             onSelectSubject={setSelectedId}
             onSetTab={setTab}
@@ -44,7 +47,7 @@ export default function SubjectDiffApp() {
           />
         )}
         {tab === "Diff" && (
-          <DiffTab
+          <PatientProfileTab
             selectedId={selectedId}
             onSelectedIdChange={setSelectedId}
             selectedCols={selectedCols}
@@ -53,20 +56,21 @@ export default function SubjectDiffApp() {
             onOnlyChangedColsChange={setOnlyChangedCols}
             colsOpen={colsOpen}
             onColsOpenChange={setColsOpen}
-            showAll={showAll}
-            onlyNarrative={onlyNarrative}
+            showAll={true}
+            onlyNarrative={false}
             onOpenNarrative={openNarrative}
           />
         )}
         {tab === "PatientList" && <PatientListTab />}
+        {tab === "NarrativesList" && <NarrativesListChangesTab />}
         {tab === "Narrative" && (
-          <NarrativeTab
+          <NarrativeDifferenceTab
             selectedSubjectId={selectedId}
             onSubjectChange={setSelectedId}
           />
         )}
-      </div>
+      </Container>
       <Footer />
-    </div>
+    </Box>
   );
 }

@@ -19,10 +19,6 @@ export function ColumnPicker({ open, onClose, selectedCols, onApply, onReset }: 
   const [pending, setPending] = useState<Set<string>>(new Set(selectedCols));
 
   const currentDataset = useMemo(() => COLUMN_DATASETS.find((d) => d.id === dataset)!, [dataset]);
-  const allCodes = useMemo(
-    () => currentDataset.tables.flatMap((t) => t.columns.map((c) => c.code)),
-    [currentDataset]
-  );
 
   const toggleCol = (code: string) => {
     setPending((prev) => {

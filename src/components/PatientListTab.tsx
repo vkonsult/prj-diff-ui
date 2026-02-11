@@ -6,17 +6,20 @@ import {
   Plus,
   ArrowRight,
   Check,
-  X,
 } from "lucide-react";
 import { ORANGE } from "../constants";
 import {
-  DEFAULT_CRITERIA,
   INITIAL_PATIENT_LIST_QUERIES,
   PATIENT_LIST_NEW,
   PATIENT_LIST_EXISTING,
 } from "../constants";
-import { Switch } from "./Switch";
+import { DifferencePill } from "./DifferencePill";
+import { ChangeTypeFilter } from "./ChangeTypeFilter";
+import { CompareModeFilterBox } from "./CompareModeFilterBox";
+import { YellowTooltip } from "./YellowTooltip";
 import type { PatientListQuery, PatientListRow } from "../types";
+import type { ChangeType } from "../types";
+import type { FilterParams } from "../types";
 
 function QueryBlockEditable({
   q,
@@ -92,45 +95,17 @@ function QueryBlockEditable({
   );
 }
 
-function QueryBlockReadOnly({ q }: { q: PatientListQuery }) {
-  return (
-    <div className="rounded border border-slate-200 bg-white p-3">
-      <div className="text-sm font-semibold text-slate-900">{q.title}</div>
-      <div className="mt-2">
-        <span className="text-xs font-medium text-slate-600">Free Text</span>
-        <p className="mt-0.5 text-sm text-slate-700">{q.freeText}</p>
-      </div>
-      <div className="mt-2">
-        <span className="text-xs font-medium text-slate-600">Logic</span>
-        <pre className="mt-0.5 overflow-x-auto rounded border border-slate-200 bg-purple-50 px-2 py-1.5 text-xs text-slate-700">
-          {q.logic}
-        </pre>
-      </div>
-    </div>
-  );
-}
-
-function StatusDot({ status }: { status: PatientListRow["status"] }) {
-  const color =
-    status === "green"
-      ? "bg-emerald-500"
-      : status === "yellow"
-        ? "bg-amber-500"
-        : "bg-red-500";
-  return (
-    <span
-      className={`inline-block h-2.5 w-2.5 shrink-0 rounded-full ${color}`}
-      title={status}
-    />
-  );
-}
-
 function PatientTable({
   rows,
   showSort,
+  oldRowsBySubjid,
+  newSubjidSet,
 }: {
   rows: PatientListRow[];
   showSort?: boolean;
+  oldRowsBySubjid?: Record<string, PatientListRow>;
+  /** Set of SUBJIDs in the new list; rows not in this set are Removed */
+  newSubjidSet?: Set<string>;
 }) {
   const [sortKey, setSortKey] = useState<string | null>(null);
   const sorted = useMemo(() => {
@@ -142,6 +117,41 @@ function PatientTable({
       return String(ak).localeCompare(String(bk));
     });
   }, [rows, sortKey]);
+
+  const getOldValueDisplay = (
+    row: PatientListRow,
+    field: keyof PatientListRow
+  ): string | undefined => {
+    if (!oldRowsBySubjid) return undefined;
+    const oldRow = oldRowsBySubjid[row.subjid];
+    if (!oldRow) return undefined;
+    const a = row[field];
+    const b = oldRow[field];
+    const changed =
+      typeof a === "boolean" && typeof b === "boolean"
+        ? a !== b
+        : String(a) !== String(b);
+    if (!changed) return undefined;
+    const raw = b;
+    if (typeof raw === "boolean") return raw ? "Yes" : "No";
+    if (raw === undefined || raw === null) return "—";
+    return String(raw);
+  };
+
+  const getDifferenceType = (row: PatientListRow): ChangeType => {
+    if (newSubjidSet && !newSubjidSet.has(row.subjid)) return "Removed";
+    if (!oldRowsBySubjid) return "Unchanged";
+    const oldRow = oldRowsBySubjid[row.subjid];
+    if (!oldRow) return "Added";
+    const keys: (keyof PatientListRow)[] = ["age", "sex", "race", "death", "sae", "aeToDc"];
+    const changed = keys.some((k) => {
+      const a = row[k];
+      const b = oldRow[k];
+      if (typeof a === "boolean" && typeof b === "boolean") return a !== b;
+      return String(a) !== String(b);
+    });
+    return changed ? "Modified" : "Unchanged";
+  };
 
   const Header = ({ col, label }: { col: string; label: string }) => (
     <th className="border-b border-slate-200 bg-slate-50 px-2 py-1.5 text-left text-xs font-semibold text-slate-700">
@@ -165,8 +175,10 @@ function PatientTable({
       <table className="w-full min-w-[600px] border-collapse text-sm">
         <thead>
           <tr>
+            <th className="border-b border-slate-200 bg-slate-50 px-2 py-1.5 text-left text-xs font-semibold text-slate-700">
+              Difference
+            </th>
             <Header col="subjid" label="SUBJID" />
-            <Header col="status" label="Status" />
             <Header col="age" label="Age" />
             <Header col="sex" label="Sex" />
             <Header col="race" label="Race" />
@@ -179,35 +191,57 @@ function PatientTable({
           {sorted.map((r) => (
             <tr
               key={r.subjid}
-              className="border-b border-slate-100 hover:bg-slate-50"
+              className={`border-b hover:bg-slate-50 ${
+                getDifferenceType(r) === "Removed"
+                  ? "border-dotted border-slate-300 line-through text-slate-500"
+                  : "border-slate-100"
+              }`}
             >
+              <td className="px-2 py-1.5">
+                <DifferencePill label={getDifferenceType(r)} />
+              </td>
               <td className="px-2 py-1.5 text-slate-800">{r.subjid}</td>
-              <td className="px-2 py-1.5">
-                <StatusDot status={r.status} />
+              <td className="px-2 py-1.5 text-slate-700">
+                <YellowTooltip oldValue={getDifferenceType(r) === "Modified" ? getOldValueDisplay(r, "age") : undefined}>
+                  {r.age}
+                </YellowTooltip>
               </td>
-              <td className="px-2 py-1.5 text-slate-700">{r.age}</td>
-              <td className="px-2 py-1.5 text-slate-700">{r.sex}</td>
-              <td className="px-2 py-1.5 text-slate-700">{r.race}</td>
-              <td className="px-2 py-1.5">
-                {r.death ? (
-                  <Check className="h-4 w-4 text-slate-800" />
-                ) : (
-                  <X className="h-4 w-4 text-red-500" />
-                )}
+              <td className="px-2 py-1.5 text-slate-700">
+                <YellowTooltip oldValue={getDifferenceType(r) === "Modified" ? getOldValueDisplay(r, "sex") : undefined}>
+                  {r.sex}
+                </YellowTooltip>
               </td>
-              <td className="px-2 py-1.5">
-                {r.sae ? (
-                  <Check className="h-4 w-4 text-slate-800" />
-                ) : (
-                  <X className="h-4 w-4 text-red-500" />
-                )}
+              <td className="px-2 py-1.5 text-slate-700">
+                <YellowTooltip oldValue={getDifferenceType(r) === "Modified" ? getOldValueDisplay(r, "race") : undefined}>
+                  {r.race}
+                </YellowTooltip>
               </td>
               <td className="px-2 py-1.5">
-                {r.aeToDc ? (
-                  <Check className="h-4 w-4 text-slate-800" />
-                ) : (
-                  <X className="h-4 w-4 text-red-500" />
-                )}
+                <YellowTooltip oldValue={getDifferenceType(r) === "Modified" ? getOldValueDisplay(r, "death") : undefined}>
+                  {r.death ? (
+                    <Check className="h-4 w-4 text-slate-800" />
+                  ) : (
+                    <span className="text-slate-500">—</span>
+                  )}
+                </YellowTooltip>
+              </td>
+              <td className="px-2 py-1.5">
+                <YellowTooltip oldValue={getDifferenceType(r) === "Modified" ? getOldValueDisplay(r, "sae") : undefined}>
+                  {r.sae ? (
+                    <Check className="h-4 w-4 text-slate-800" />
+                  ) : (
+                    <span className="text-slate-500">—</span>
+                  )}
+                </YellowTooltip>
+              </td>
+              <td className="px-2 py-1.5">
+                <YellowTooltip oldValue={getDifferenceType(r) === "Modified" ? getOldValueDisplay(r, "aeToDc") : undefined}>
+                  {r.aeToDc ? (
+                    <Check className="h-4 w-4 text-slate-800" />
+                  ) : (
+                    <span className="text-slate-500">—</span>
+                  )}
+                </YellowTooltip>
               </td>
             </tr>
           ))}
@@ -217,13 +251,25 @@ function PatientTable({
   );
 }
 
+function getDifferenceTypeForRow(row: PatientListRow, oldRowsBySubjid: Record<string, PatientListRow>): ChangeType {
+  const oldRow = oldRowsBySubjid[row.subjid];
+  if (!oldRow) return "Added";
+  const keys: (keyof PatientListRow)[] = ["age", "sex", "race", "death", "sae", "aeToDc"];
+  const changed = keys.some((k) => {
+    const a = row[k];
+    const b = oldRow[k];
+    if (typeof a === "boolean" && typeof b === "boolean") return a !== b;
+    return String(a) !== String(b);
+  });
+  return changed ? "Modified" : "Unchanged";
+}
+
 export function PatientListTab() {
   const [queries, setQueries] = useState<PatientListQuery[]>(
     () => INITIAL_PATIENT_LIST_QUERIES
   );
   const [querySectionOpen, setQuerySectionOpen] = useState(false);
-  const [criteriaSectionOpen, setCriteriaSectionOpen] = useState(false);
-  const [showOnlyNarrative, setShowOnlyNarrative] = useState(false);
+  const [changeFilter, setChangeFilter] = useState<FilterParams["changeType"]>("All");
 
   const updateQuery = (id: string, upd: Partial<PatientListQuery>) => {
     setQueries((prev) =>
@@ -247,144 +293,121 @@ export function PatientListTab() {
   const clearAll = () => setQueries([]);
   const runQuery = (_id: string) => {}; // no-op for mock
 
-  const patientsNew = useMemo(() => {
-    if (!showOnlyNarrative) return PATIENT_LIST_NEW;
-    return PATIENT_LIST_NEW.filter((p) => p.narrative);
-  }, [showOnlyNarrative]);
+  const patientsNew = useMemo(() => PATIENT_LIST_NEW, []);
+  const newSubjidSet = useMemo(() => new Set(patientsNew.map((r) => r.subjid)), [patientsNew]);
 
-  const patientsExisting = PATIENT_LIST_EXISTING;
+  const existingBySubjid = useMemo(() => {
+    const map: Record<string, PatientListRow> = {};
+    for (const row of PATIENT_LIST_EXISTING) {
+      map[row.subjid] = row;
+    }
+    return map;
+  }, []);
+
+  const removedRows = useMemo(
+    () => PATIENT_LIST_EXISTING.filter((r) => !newSubjidSet.has(r.subjid)),
+    [newSubjidSet]
+  );
+
+  const allRows = useMemo(
+    () => [...patientsNew, ...removedRows],
+    [patientsNew, removedRows]
+  );
+
+  const patientsFiltered = useMemo(() => {
+    if (changeFilter === "All") return allRows;
+    return allRows.filter((r) => {
+      const type: ChangeType = !newSubjidSet.has(r.subjid) ? "Removed" : getDifferenceTypeForRow(r, existingBySubjid);
+      return type === changeFilter;
+    });
+  }, [allRows, changeFilter, newSubjidSet, existingBySubjid]);
 
   return (
-    <div className="mt-2">
-      <p className="mb-2 text-sm text-slate-600">
-        Summary is showing the difference from all the domains, patient list and
-        narrative.
-      </p>
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {/* Left: PRJ012 New */}
-        <div className="flex flex-col rounded-md bg-white shadow-sm ring-1 ring-slate-200">
-          <div className="border-b border-slate-200 px-3 py-2">
-            <h3 className="text-sm font-bold text-slate-900">PRJ012 New</h3>
-          </div>
-          <div className="flex-1 overflow-auto p-3">
-            {/* List of Query */}
-            <div className="mb-4">
-              <button
-                type="button"
-                className="flex w-full items-center justify-between gap-2 rounded py-1.5 text-left text-sm font-semibold text-slate-800 hover:bg-slate-50"
-                onClick={() => setQuerySectionOpen((o) => !o)}
-              >
-                <span className="flex items-center gap-1.5">
-                  {querySectionOpen ? (
-                    <ChevronDown className="h-4 w-4" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4" />
-                  )}
-                  List of Query
-                </span>
-                <button
-                  type="button"
-                  className="flex h-7 w-7 items-center justify-center rounded text-white hover:opacity-90"
-                  style={{ backgroundColor: ORANGE }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    addQuery();
-                  }}
-                  aria-label="Add query"
-                >
-                  <Plus className="h-4 w-4" />
-                </button>
-              </button>
-              {querySectionOpen && (
-                <div className="mt-2 space-y-2">
-                  {queries.map((q) => (
-                    <QueryBlockEditable
-                      key={q.id}
-                      q={q}
-                      onUpdate={updateQuery}
-                      onRun={runQuery}
-                    />
-                  ))}
-                  <div className="flex gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={clearAll}
-                      className="rounded border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                    >
-                      CLEAR ALL
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => queries.forEach((q) => runQuery(q.id))}
-                      className="rounded px-3 py-1.5 text-sm font-semibold text-white hover:opacity-90"
-                      style={{ backgroundColor: ORANGE }}
-                    >
-                      RUN ALL
-                    </button>
-                  </div>
+    <div className="mt-0">
+      <div className="flex flex-col rounded-md bg-white shadow-sm ring-1 ring-slate-200">
+        <button
+          type="button"
+          className="flex w-full items-center justify-between gap-2 rounded py-1.5 text-left text-sm font-semibold text-slate-800 hover:bg-slate-50"
+          onClick={() => setQuerySectionOpen((o) => !o)}
+        >
+          <span className="flex items-center gap-1.5">
+            {querySectionOpen ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
+            Query Builder
+          </span>
+          <button
+            type="button"
+            className="flex h-7 w-7 items-center justify-center rounded text-white hover:opacity-90"
+            style={{ backgroundColor: ORANGE }}
+            onClick={(e) => {
+              e.stopPropagation();
+              addQuery();
+            }}
+            aria-label="Add query"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+        </button>
+        <div className="flex flex-1 flex-col overflow-hidden p-3">
+          {/* Query Builder - centered */}
+          <div className="mb-4 flex justify-center">
+            <div className="w-full max-w-md">
+            {querySectionOpen && (
+              <div className="mt-2 space-y-2">
+                {queries.map((q) => (
+                  <QueryBlockEditable
+                    key={q.id}
+                    q={q}
+                    onUpdate={updateQuery}
+                    onRun={runQuery}
+                  />
+                ))}
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={clearAll}
+                    className="rounded border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  >
+                    CLEAR ALL
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => queries.forEach((q) => runQuery(q.id))}
+                    className="rounded px-3 py-1.5 text-sm font-semibold text-white hover:opacity-90"
+                    style={{ backgroundColor: ORANGE }}
+                  >
+                    RUN ALL
+                  </button>
                 </div>
-              )}
-            </div>
-
-            {/* List of Patients */}
-            <div>
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <span className="text-sm font-semibold text-slate-800">
-                  List of Patients
-                </span>
-                <Switch
-                  checked={showOnlyNarrative}
-                  label="Show Only Narrative Subjects"
-                  accent={ORANGE}
-                  onToggle={setShowOnlyNarrative}
-                />
               </div>
-              <p className="mb-2 text-xs text-slate-600">
-                {patientsNew.length} New Patients found
-              </p>
-              <PatientTable rows={patientsNew} showSort />
+            )}
             </div>
           </div>
-        </div>
 
-        {/* Right: PRJ011 Existing */}
-        <div className="flex flex-col rounded-md bg-white shadow-sm ring-1 ring-slate-200">
-          <div className="border-b border-slate-200 px-3 py-2">
-            <h3 className="text-sm font-bold text-slate-900">PRJ011 Existing</h3>
-          </div>
-          <div className="flex-1 overflow-auto p-3">
-            {/* Default Criteria */}
-            <div className="mb-4">
-              <button
-                type="button"
-                className="flex w-full items-center gap-2 rounded py-1.5 text-left text-sm font-semibold text-slate-800 hover:bg-slate-50"
-                onClick={() => setCriteriaSectionOpen((o) => !o)}
+          {/* List of Patients - heading + filters in one row, bordered wrapper to bottom */}
+          <div className="flex min-h-[60vh] flex-1 flex-col rounded-lg border border-slate-200 overflow-hidden">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-3 py-2">
+              <h3 className="text-sm font-bold text-slate-900">Patient List</h3>
+              <CompareModeFilterBox
+                leadingContent={
+                  <span className="shrink-0 text-sm font-bold" style={{ color: ORANGE }}>
+                    Compare found {PATIENT_LIST_NEW.length} patients in PRJ012 vs {PATIENT_LIST_EXISTING.length} patients in PRJ011
+                  </span>
+                }
               >
-                {criteriaSectionOpen ? (
-                  <ChevronDown className="h-4 w-4" />
-                ) : (
-                  <ChevronRight className="h-4 w-4" />
-                )}
-                Default Criteria
-              </button>
-              {criteriaSectionOpen && (
-                <div className="mt-2 space-y-2">
-                  {DEFAULT_CRITERIA.map((q) => (
-                    <QueryBlockReadOnly key={q.id} q={q} />
-                  ))}
-                </div>
-              )}
+                <ChangeTypeFilter value={changeFilter} onChange={setChangeFilter} />
+              </CompareModeFilterBox>
             </div>
-
-            {/* List of Patients */}
-            <div>
-              <div className="mb-2 text-sm font-semibold text-slate-800">
-                List of Patients
-              </div>
-              <p className="mb-2 text-xs text-slate-600">
-                {patientsExisting.length} New Patients found
-              </p>
-              <PatientTable rows={patientsExisting} showSort />
+            <div className="min-h-0 flex-1 overflow-auto">
+              <PatientTable
+                rows={patientsFiltered}
+                showSort
+                oldRowsBySubjid={existingBySubjid}
+                newSubjidSet={newSubjidSet}
+              />
             </div>
           </div>
         </div>

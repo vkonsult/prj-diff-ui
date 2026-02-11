@@ -4,6 +4,8 @@ export type DiffCell = { col: string; q1: unknown; q2: unknown };
 
 export type SubjectRow = {
   id: string;
+  /** Unique key when multiple rows share the same USUBJID (e.g. one row per AE record) */
+  rowKey?: string;
   changeType: ChangeType;
   fieldsChanged: number;
   impact: "High" | "Medium" | "Low" | "—";
