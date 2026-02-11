@@ -290,20 +290,21 @@ _existingRows.push({
 });
 export const PATIENT_LIST_EXISTING = _existingRows;
 
-/** Narrative tab: key-value block (label + value rows + difference type) */
+/** Narrative tab: key-value block (label + value rows + difference type). oldValue = previous value for Modified/Removed. */
 export const NARRATIVE_KEY_VALUES: {
   label: string;
   value: string;
   changeType: import("./types").ChangeType;
+  oldValue?: string;
 }[] = [
   { label: "Study (protocol)", value: "C-700-01-008-012 - M1", changeType: "Unchanged" },
-  { label: "Subject identifier / country", value: "287-103, BRL", changeType: "Modified" },
+  { label: "Subject identifier / country", value: "287-103, BRL", changeType: "Modified", oldValue: "SubjectId, Country" },
   { label: "Subject demographics", value: "98-year-old white female", changeType: "Unchanged" },
   { label: "Disease under study specific disease type", value: "Epithelial ovarian cancer", changeType: "Unchanged" },
-  { label: "Treatment group", value: "Carboplatin + Gemcitabine", changeType: "Modified" },
+  { label: "Treatment group", value: "Carboplatin + Gemcitabine", changeType: "Modified", oldValue: "Treatment group description" },
   { label: "Date of first infusion of study drug", value: "23-Dec-2019", changeType: "Unchanged" },
   { label: "Date of last discontinuation of study drug", value: "14-Apr-2021", changeType: "Unchanged" },
-  { label: "Reason of discontinuation from treatment", value: "Progressive disease", changeType: "Removed" },
+  { label: "Reason of discontinuation from treatment", value: "Progressive disease", changeType: "Removed", oldValue: "Progressive disease" },
   { label: "Criteria met for narratives", value: "Yes", changeType: "Added" },
 ];
 
